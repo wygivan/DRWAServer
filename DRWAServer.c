@@ -81,7 +81,7 @@ void *handle_request(void *arg)
 	free(arg);
 
 	pthread_detach(pthread_self());
-	memset(buf, 'A', BUF_SIZE);
+	memset(buf, '\0', BUF_SIZE);
 
 	gettimeofday(&tv, NULL);
 	t1 = tv.tv_sec + tv.tv_usec / 1000000.0;
@@ -122,6 +122,7 @@ int main(void)
 	struct tm now2;
 
 	signal(SIGPIPE, SIG_IGN);
+	setlinebuf(stdout);
 
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket() error");
