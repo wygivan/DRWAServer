@@ -29,18 +29,24 @@ def main():
   elif sys.argv[1] == 'plot':
     time = []
     cwnd = []
+    rwnd = []
     for line in open('tcpprobe.log'):
       cols = line.split()
       time.append(float(cols[0]))
       cwnd.append(int(cols[6]))
+      rwnd.append(int(cols[8]))
 
     if time and cwnd:
       g = Gnuplot.Gnuplot(persist = True)
-      g.title('')
       g.xlabel('Time (s)')
       g.ylabel('cwnd (segment)')
       g.plot(Gnuplot.Data(time, cwnd, with_ = 'linespoints'))
       g.hardcopy('cwnd.png', terminal = 'png')
+
+      g.xlabel('Time (s)')
+      g.ylabel('rwnd (byte)')
+      g.plot(Gnuplot.Data(time, rwnd, with_ = 'linespoints'))
+      g.hardcopy('rwnd.png', terminal = 'png')
   else:
     print 'Unknown command'
 
