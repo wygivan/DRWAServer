@@ -15,12 +15,12 @@ def main():
     os.system('rm -f *.log *.png')
     os.system('make -s clean')
   elif sys.argv[1] == 'start':
-    os.system('sudo modprobe tcp_probe port=8001')
+    os.system('sudo modprobe tcp_probe port=8001 full=1')
     os.system('sudo cat /proc/net/tcpprobe > tcpprobe.log &')
-    os.system('./DRWAServer > throughput.log &')
+    os.system('./DRWAServer downlink > throughput.log &')
   elif sys.argv[1] == 'stop':
     os.system('killall DRWAServer')
-    os.system("kill `ps aux | grep '[s]udo cat /proc/net/tcpprobe' | awk '{print $2}'`")
+    os.system("sudo kill `ps aux | grep '[s]udo cat /proc/net/tcpprobe' | awk '{print $2}'`")
     os.system('sudo modprobe -r tcp_probe')
   elif sys.argv[1] == 'status':
     os.system('ps aux | grep "[s]udo cat /proc/net/tcpprobe"')
@@ -30,14 +30,16 @@ def main():
     time = []
     cwnd = []
     rwnd = []
+    rtt = []
     for line in open('tcpprobe.log'):
       cols = line.split()
       time.append(float(cols[0]))
       cwnd.append(int(cols[6]))
       rwnd.append(int(cols[8]))
+      rtt.append(int(cols[9]))
 
     if time and cwnd:
-      g = Gnuplot.Gnuplot(persist = True)
+      g = Gnuplot.Gnuplot()
       g.xlabel('Time (s)')
       g.ylabel('cwnd (segment)')
       g.plot(Gnuplot.Data(time, cwnd, with_ = 'linespoints'))
@@ -47,6 +49,11 @@ def main():
       g.ylabel('rwnd (byte)')
       g.plot(Gnuplot.Data(time, rwnd, with_ = 'linespoints'))
       g.hardcopy('rwnd.png', terminal = 'png')
+
+      g.xlabel('Time (s)')
+      g.ylabel('RTT (ms)')
+      g.plot(Gnuplot.Data(time, rtt, with_ = 'linespoints'))
+      g.hardcopy('rtt.png', terminal = 'png')
   else:
     print 'Unknown command'
 
